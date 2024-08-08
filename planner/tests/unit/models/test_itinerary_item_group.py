@@ -1,0 +1,46 @@
+from django.test import TestCase
+from freezegun import freeze_time
+from planner.models import Activity, ItineraryItem, ItineraryItemGroup
+
+import datetime
+
+FREEZE_TIME = datetime.datetime(2024, 8, 7, 0, 0, 0, tzinfo=datetime.timezone.utc)
+TICK_DELTA = datetime.timedelta(seconds=15)
+
+class ItineraryItemGroupTest(TestCase):
+    def createItineraryItem(self, description="Test Activity"):
+        activity = Activity.objects.create(description=description)
+
+        return ItineraryItem.objects.from_activity(activity)
+    @freeze_time(time_to_freeze=FREEZE_TIME)
+    def test_created_at_property_equals_initial_datetime(self):
+        item = self.createItineraryItem()
+        group = ItineraryItemGroup.objects.create(
+            label="Test Group",
+        )
+        group.items.add(item)
+        assert group.created_at == FREEZE_TIME
+
+    def test_updated_at_property_increments_on_save(self):
+        with freeze_time(FREEZE_TIME) as frozen_datetime:
+            item = self.createItineraryItem()
+            group = ItineraryItemGroup.objects.create(
+                label="Test Group",
+            )
+            group.items.add(item)
+            initial_updated_at = group.updated_at
+
+            frozen_datetime.tick(15)
+            group.save()
+
+            assert initial_updated_at == FREEZE_TIME
+            assert group.updated_at == (FREEZE_TIME + TICK_DELTA)
+
+    def test_item_has_a_valid_description(self):
+        description = "Test Group"
+        item = self.createItineraryItem(description)
+        group = ItineraryItemGroup.objects.create(
+            label="Test Group",
+        )
+        group.items.add(item)
+        assert group.__str__() == description
