@@ -1,9 +1,10 @@
 from django.db import models
-from planner.models.activity import Activity
 
-class ItineraryItemManager(models.Manager):
-    def from_activity(self, activity: Activity):
-        return self.create(activity=activity)
+from planner.models.itinerary_item_group import ItineraryItemGroup
+
+# class ItineraryItemManager(models.Manager):
+#     def from_activity(self, activity: Activity):
+#         return self.create(activity=activity)
 
 class ItineraryItem(models.Model):
     """ItineraryItem Model
@@ -12,16 +13,19 @@ class ItineraryItem(models.Model):
     model.
     """
     activity = models.ForeignKey(
-        Activity,
+        'Activity',
+        on_delete=models.PROTECT,
+        blank=False,
+        null=False,
+    )
+    group = models.ForeignKey(
+        ItineraryItemGroup,
         on_delete=models.PROTECT,
         blank=False,
         null=False,
     )
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
-
-    objects = ItineraryItemManager()
-
     def __str__(self):
         return self.activity.description
 
