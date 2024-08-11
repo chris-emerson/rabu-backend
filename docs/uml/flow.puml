@@ -1,0 +1,55 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+actor User
+participant App
+participant Backend
+participant Mapbox
+queue TaskQueue
+participant CeleryWorker
+participant ChatGPT
+participant Google
+database DB
+
+title Rabu Demo Project - A Geolocating Generative AI Discovery service for planning Trips.
+User -> App: Move the Map Cursor
+App -> Backend: Generate Itinerary Request \n POST /itinerary-generation/
+
+note left
+Example Request in JSONAPI format:
+
+  {"data":{"type":"itinerary_generation_views",
+          "attributes":{
+                "latitude":54.2379333607472,
+                "longitude":-2.36966957036279}}}
+end note
+
+Backend -> Mapbox: Reverse geolocation search [long,lat]
+Mapbox -> Backend: List of nearby places at [long,lat]
+
+group Query GPT Task [Async Celery task]
+    Backend -> TaskQueue: New query_gpt() Task
+    TaskQueue -> CeleryWorker
+    CeleryWorker -> ChatGPT: Prompt: ""Plan a three day trip near {location_name}"
+    ChatGPT -> CeleryWorker: Results in pydantic JSON
+    CeleryWorker -> Backend: Results
+end group
+
+group Save Results Task [Async Celery task]
+    Backend -> TaskQueue: New save_gpt_response() Task
+    TaskQueue -> CeleryWorker: Map response to Django Itinerary model
+    CeleryWorker -> Mapbox: Search MapBox API to return coordinates for {activity_name} near [lat,long]
+    Mapbox -> CeleryWorker: List of coordinates nearby to {activity_name}}
+    CeleryWorker -> Google: Search google images for {{activity_name}
+    Google -> CeleryWorker: Image results for {{activity_name}}
+    CeleryWorker -> DB: Save data to db.
+end group
+Backend -> CeleryWorker: Block thread using get() to trigger ASYNC Workflows
+note left
+n.b. We synchronously execute the CeleryWorker tasks for simplicity.
+     Ideally app should be notified via Websockets / SSE...
+end note
+Backend -> App: Serialized Itinerary JSONAPI response.
+App -> User: The Itinerary in JSONAPI format.
+@enduml

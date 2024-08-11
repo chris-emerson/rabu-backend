@@ -4,10 +4,13 @@
 
 class Itinerary<<AggregateRoot>> {
     Int id
+    CharField label
     ItineraryItemGroup[] items
+    --
     DateTimeField updated_at
     DateTimeField created_at
-
+    --
+    Methods [TBC]
     ItineraryItemGroup newItineraryItemGroup(ItineraryItem[] = [])
     ItineraryItemGroup add(ItineraryItemGroup)
     void remove(ItineraryItemGroup)
@@ -16,27 +19,37 @@ class Itinerary<<AggregateRoot>> {
 note right: Applies the Aggregate Root Concept from DDD to the Itinerary model
 
 class ItineraryItemGroup {
+    Int id
+    CharField label
+    fk<Itinerary> itinerary
+    --
     DateTimeField updated_at
     DateTimeField created_at
-    Int id
-    String group_name
-    ItineraryItem[] items
 }
 
 class ItineraryItem {
+    Int id
+    FloatField longitude
+    FloatField latitude
+    fk<Activity> activity
+    fk<ItineraryItemGroup> group
+     ---
     DateTimeField updated_at
     DateTimeField created_at
-
-    Int id
-    fk<Activity> activity_id
 }
 
 class Activity {
     Int id
-    String name
+    CharField name
+    CharField description
+    TextField full_description
+    CharField image
+    ---
+    DateTimeField updated_at
+    DateTimeField created_at
 }
 
-Itinerary::ItineraryItemGroup --> ItineraryItemGroup::id
-ItineraryItemGroup::ItineraryItems --> ItineraryItem::id
+Itinerary::ItineraryItemGroup <-- ItineraryItemGroup::id
+ItineraryItemGroup::ItineraryItems <-- ItineraryItem::id
 ItineraryItem::activity_id --> Activity::id
 @enduml
