@@ -1,0 +1,11 @@
+@startuml
+'https://plantuml.com/use-case-diagram
+
+User --> (Request Itinerary Generation)
+User --> (Track the Itinerary status)
+User --> (View the completed Itinerary)
+
+Backend --> (Generate new itinerary using LLM)
+Backend --> (Save Itinerary in db)
+Backend --> (Return Itinerary to User)
+@enduml

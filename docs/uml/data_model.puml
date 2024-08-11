@@ -1,0 +1,42 @@
+@startuml
+'https://plantuml.com/object-diagram
+
+
+class Itinerary<<AggregateRoot>> {
+    Int id
+    ItineraryItemGroup[] items
+    DateTimeField updated_at
+    DateTimeField created_at
+
+    ItineraryItemGroup newItineraryItemGroup(ItineraryItem[] = [])
+    ItineraryItemGroup add(ItineraryItemGroup)
+    void remove(ItineraryItemGroup)
+    ItineraryItemGroup swap(ItineraryItemGroup old, ItineraryItemGroup new)
+}
+note right: Applies the Aggregate Root Concept from DDD to the Itinerary model
+
+class ItineraryItemGroup {
+    DateTimeField updated_at
+    DateTimeField created_at
+    Int id
+    String group_name
+    ItineraryItem[] items
+}
+
+class ItineraryItem {
+    DateTimeField updated_at
+    DateTimeField created_at
+
+    Int id
+    fk<Activity> activity_id
+}
+
+class Activity {
+    Int id
+    String name
+}
+
+Itinerary::ItineraryItemGroup --> ItineraryItemGroup::id
+ItineraryItemGroup::ItineraryItems --> ItineraryItem::id
+ItineraryItem::activity_id --> Activity::id
+@enduml

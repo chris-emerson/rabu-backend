@@ -1,0 +1,4 @@
+from .activity import ActivitySerializer
+from .itinerary_item import ItineraryItemSerializer
+from .itinerary_item_group import ItineraryItemGroupSerializer
+from .itinerary import ItinerarySerializer

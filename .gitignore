@@ -6,6 +6,12 @@ env/
 .direnv
 .envrc
 
+
+
 # Editor specific files and folders
 .idea
 .vscode
+*.pyc
+__pycache__
+
+db.sqlite3
