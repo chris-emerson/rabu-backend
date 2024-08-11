@@ -2,7 +2,7 @@
 
 This repository contains logic to provide a backend for a Generative AI search application. The application allows the user to discover new Trip ideas by clicking around a map. It uses ChatGPT to plan a three day trip of local attractions and then renders the Itinerary on a map.
 
-![UseCases](docs/app_preview.png?raw=true)
+![UseCases](docs/app_preview2.png?raw=true)
 
 This repository contains the backend that powers the app by performing LLM a search query, geocoding tasks and image retrieval for the sample application.
 
@@ -124,7 +124,7 @@ The admin page has also been configured with `django-celery-results` to incldue 
 we can keep track of the Async Worker tasks.
 ![CeleryTasks](docs/celery_task_results.png?raw=true)
 
-# API Responses & Fromat
+# API Responses & Format
 
 The REST api returns responses in JSON:API format. In a production app you would leverage Hypermedias as the Engine of Application of State (HATEOAS) but the service requires more configuration to include the hypermedia links. Hypermedia is beneficial as it helps to navigate through your platform and encourages loose coupling ofclients to the backend. 
 
