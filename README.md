@@ -79,7 +79,7 @@ docker run -it --rm --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3.13-ma
 celery -A trabu_backend worker -l INFO
 ```
 # Security & CORS
-This demo project is not secure. CORS has been disabled for development purposes since this is not intended for production usage. The only precaution taken is to use direnv to reduce the chance of accidental credential leakage.
+This demo project is not secure. CORS has been disabled for development purposes since this is not intended for production usage. The only precaution taken is to use direnv to reduce the chance of accidental API key leakage.
 
 # Documentation
 
@@ -115,3 +115,122 @@ The '/docs/architecture-decision-records' directory contains ADR files following
 
 For more information, please read the AWS prescriptive-guidance at:
 https://docs.aws.amazon.com/prescriptive-guidance/latest/architectural-decision-records/adr-process.html
+
+## Admin
+The django admin page can be accessed at: 
+```http://127.0.0.1:8000/admin/```
+
+The admin page has also been configured with `django-celery-results` to incldue Celery results so that 
+we can keep track of the Async Worker tasks.
+![CeleryTasks](docs/celery_task_results.png?raw=true)
+
+# API Responses & Fromat
+
+The REST api returns responses in JSON:API format. In a production app you would leverage Hypermedias as the Engine of Application of State (HATEOAS) but the service requires more configuration to include the hypermedia links. Hypermedia is beneficial as it helps to navigate through your platform and encourages loose coupling ofclients to the backend. 
+
+The application is built around restful resources. We POST a request to the /itinerary-generation/ endpoint to generate a new Itinerary Generation resource. Whilst not yet implemented, this endpoint is considered a resource in its own right and could keep track of request metadata, search params etc as well as the current status of the async processing. 
+
+After processing, the backend then creates a new Itinerary resource which can be accessed at /v1/itineraries/:id as required. Access to subresources is possible but not encourages due to DDD principles. 
+
+Endpoints:
+* POST /itinerary-generation
+* GET /v1/itineraries/:id
+  
+```json
+GET /v1/itineraries/801/
+HTTP 200 OK
+Allow: GET
+Content-Type: application/vnd.api+json
+Vary: Accept
+
+{
+    "data": {
+        "type": "itinerary",
+        "id": "801",
+        "attributes": {
+            "label": "Trip to Sainte-Adresse, Seine-Maritime, France",
+            "created_at": "2024-08-11T01:40:01.335505Z",
+            "updated_at": "2024-08-11T01:40:04.192831Z",
+            "itinerary_item_groups": [
+                {
+                    "id": 2352,
+                    "label": "Day 1",
+                    "created_at": "2024-08-11T01:40:01.337680Z",
+                    "updated_at": "2024-08-11T01:40:01.337645Z",
+                    "itinerary": {
+                        "type": "itineraries",
+                        "id": "801"
+                    },
+                    "itinerary_items": [
+                        {
+                            "id": 4724,
+                            "created_at": "2024-08-11T01:40:01.804747Z",
+                            "updated_at": "2024-08-11T01:40:01.804716Z",
+                            "activity": {
+                                "type": [
+                                    "activity"
+                                ],
+                                "id": "4726"
+                            },
+                            "group": {
+                                "type": [
+                                    "itinerary_item_group"
+                                ],
+                                "id": "2352"
+                            },
+                            "activity_data": {
+                                "id": 4726,
+                                "description": "Visit the Cliffs of Etretat",
+                                "created_at": "2024-08-11T01:40:01.802622Z",
+                                "updated_at": "2024-08-11T01:40:01.802564Z",
+                                "itinerary_item": [
+                                    {
+                                        "type": "itinerary_items",
+                                        "id": "4724"
+                                    }
+                                ],
+                                "image": "http://static1.squarespace.com/static/5fa57aacf5b0a90a76b0d7cc/t/615b193d7eb5903949fd11b4/1633360189924/HYW_20190917_203335-squarespace.jpg?format=1500w",
+                                "full_description": "Experience the breathtaking views of the iconic Cliffs of Etretat, famous for their stunning white chalk cliffs, natural arches, and pebble beaches. Walk along the cliff paths, admire the dramatic scenery, and capture unforgettable moments with your family."
+                            },
+                            "latitude": 49.708131,
+                            "longitude": 0.202447
+                        },
+                        {
+                            "id": 4725,
+                            "created_at": "2024-08-11T01:40:02.358412Z",
+                            "updated_at": "2024-08-11T01:40:02.358401Z",
+                            "activity": {
+                                "type": [
+                                    "activity"
+                                ],
+                                "id": "4727"
+                            },
+                            "group": {
+                                "type": [
+                                    "itinerary_item_group"
+                                ],
+                                "id": "2352"
+                            },
+                            "activity_data": {
+                                "id": 4727,
+                                "description": "Explore Le Havre City Center",
+                                "created_at": "2024-08-11T01:40:02.356885Z",
+                                "updated_at": "2024-08-11T01:40:02.356856Z",
+                                "itinerary_item": [
+                                    {
+                                        "type": "itinerary_items",
+                                        "id": "4725"
+                                    }
+                                ],
+                                "image": "https://acis.com/wp-content/uploads/2013/12/120313_blog_featured.png",
+                                "full_description": "Immerse yourself in the vibrant atmosphere of Le Havre City Center, a UNESCO World Heritage site known for its modernist architecture and cultural richness. Discover charming cafes, historic buildings, and bustling markets as you wander through the heart of the city."
+                            },
+                            "latitude": 49.487957,
+                            "longitude": 0.112878
+                        }
+                    ]
+                }]
+            }
+        }
+}
+```
