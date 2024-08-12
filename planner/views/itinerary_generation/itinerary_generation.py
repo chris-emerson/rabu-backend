@@ -22,8 +22,6 @@ class ItineraryGenerationView(APIView):
 
         geo_data = geolocate.reverse_lookup(latitude, longitude)
         place_name = extract.extract_placename(geo_data)
-        
-
         # Offload the process to background workers so that
         # we can scale the worker pool
         result = query_gpt.s(place_name).delay()

@@ -1,26 +1,25 @@
 """Sample data for mocking the gelocation module."""
-TIMES_SQUARE_LOCATION = "Times Square"
-TIMES_SQUARE_ADDRESS = "7th Ave & Broadway, New York, NY 10036"
-TIMES_SQUARE_LATITDE = -74.0060
-TIMES_SQUARE_LONGITUDE = 40.7128
+from .locations import Location
 
-MAPBOX_SEARCH_RESPONSE = {
+def generate_search_response(location: Location):
+    """Returns a mapbox feature collection for the location."""
+    return {
         "type": "FeatureCollection",
         "features": [
             {
-            "place_name": TIMES_SQUARE_LOCATION,
+            "place_name": location["name"],
             "type": "Feature",
             "geometry": {
                 "type": "Point",
-                "coordinates": [TIMES_SQUARE_LATITDE, TIMES_SQUARE_LONGITUDE] 
+                "coordinates": [location["latitude"], location["longitude"]] 
             },
             "properties": {
-                "name": TIMES_SQUARE_LOCATION,
+                "name": location["name"],
                 "city": "New York City",
-                "address": TIMES_SQUARE_ADDRESS,
+                "address": location["address"],
                 "zip": "10036",
-                "coordinates": {"latitude": TIMES_SQUARE_LATITDE, 
-                                    "longitude": TIMES_SQUARE_LONGITUDE}
+                "coordinates": {"latitude": location["latitude"], 
+                                    "longitude": location["longitude"]}
             }
             }
         ]

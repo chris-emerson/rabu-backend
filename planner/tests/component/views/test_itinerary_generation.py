@@ -3,17 +3,18 @@ import json
 from unittest.mock import patch
 
 import requests_mock
-import django.core.serializers.json
 from rest_framework.test import APIClient, APIRequestFactory
 from django.test import TestCase
 from planner.models import Itinerary
-from planner.tests.fixtures.geolocading import MAPBOX_SEARCH_RESPONSE, TIMES_SQUARE_ADDRESS, TIMES_SQUARE_LATITDE, TIMES_SQUARE_LOCATION, TIMES_SQUARE_LONGITUDE
+from planner.tests.fixtures.geolocading import generate_search_response
 from planner.tests.fixtures.googlesearch import GOOGLE_SEARCH_RESPONSE
-from planner.tests.fixtures.gpt import build_gpt_itinerary_response
+from planner.tests.fixtures.gpt import generate_gpt_itinerary_response
 from planner.images import search as image_search_api
 from planner.geolocation import geolocate as geolocate_api
+from planner.tests.fixtures.locations import TIMES_SQUARE, Location
 
 class ItineraryGenerationTest(TestCase):
+    """Test cases for the Itinerary Generation Resource Endpoint."""
 
     def setUp(self):
         self.client = APIClient()
@@ -32,24 +33,24 @@ class ItineraryGenerationTest(TestCase):
                 })
         
     def test_post_request_creates_itinerary(self):
-
-        expected_image_search_url = image_search_api.get_url(TIMES_SQUARE_LOCATION)
+        search_location: Location = TIMES_SQUARE
+        expected_image_search_url = image_search_api.get_url(place_name=search_location["name"])
         expected_reverse_lookup_url = geolocate_api.get_api_url_for_reverse_lookup(
-            latitude=TIMES_SQUARE_LATITDE,
-            longitude=TIMES_SQUARE_LONGITUDE)
+            latitude=search_location["latitude"],
+            longitude=search_location["longitude"])
         
         expected_forward_lookup_url = geolocate_api.get_api_url_for_forward_lookup(
-            latitude=TIMES_SQUARE_LATITDE,
-            longitude=TIMES_SQUARE_LONGITUDE,
-            search_text=TIMES_SQUARE_ADDRESS)
+            latitude=search_location["latitude"],
+            longitude=search_location["longitude"],
+            search_text=search_location["address"])
         
-        expected_gpt_response = build_gpt_itinerary_response(search_text=TIMES_SQUARE_LOCATION,
-                                                             full_address=TIMES_SQUARE_ADDRESS)
+        expected_mapbox_response = generate_search_response(search_location)
+        expected_gpt_response = generate_gpt_itinerary_response(search_location)
                 
         with requests_mock.Mocker() as m:
             m.register_uri('GET', expected_image_search_url, json=GOOGLE_SEARCH_RESPONSE)
-            m.register_uri('GET', expected_reverse_lookup_url, json=MAPBOX_SEARCH_RESPONSE)
-            m.register_uri('GET', expected_forward_lookup_url, json=MAPBOX_SEARCH_RESPONSE)
+            m.register_uri('GET', expected_reverse_lookup_url, json=expected_mapbox_response)
+            m.register_uri('GET', expected_forward_lookup_url, json=expected_mapbox_response)
 
             with patch('celery.result.AsyncResult.get',
                     return_value=expected_gpt_response): 
@@ -60,8 +61,8 @@ class ItineraryGenerationTest(TestCase):
                 }
 
                 request_body = self.geterate_request_body(
-                    TIMES_SQUARE_LATITDE, 
-                    TIMES_SQUARE_LONGITUDE)
+                    search_location["latitude"], 
+                    search_location["longitude"])
 
                 response = self.client.post('/itinerary-generation/',
                                             data=request_body,
