@@ -1,22 +1,26 @@
 """Sample data for mocking the gelocation module."""
+TIMES_SQUARE_LOCATION = "Times Square"
+TIMES_SQUARE_ADDRESS = "7th Ave & Broadway, New York, NY 10036"
+TIMES_SQUARE_LATITDE = -74.0060
+TIMES_SQUARE_LONGITUDE = 40.7128
 
 MAPBOX_SEARCH_RESPONSE = {
         "type": "FeatureCollection",
         "features": [
             {
-                "place_name": "Times Square",
+            "place_name": TIMES_SQUARE_LOCATION,
             "type": "Feature",
             "geometry": {
                 "type": "Point",
-                "coordinates": [-74.0060, 40.7128] 
+                "coordinates": [TIMES_SQUARE_LATITDE, TIMES_SQUARE_LONGITUDE] 
             },
             "properties": {
-                "name": "Times Square",
+                "name": TIMES_SQUARE_LOCATION,
                 "city": "New York City",
-                "address": "7th Ave & Broadway, New York, NY 10036",
+                "address": TIMES_SQUARE_ADDRESS,
                 "zip": "10036",
-                "coordinates": {"latitude": -74.0060, 
-                                    "longitude": 40.7128}
+                "coordinates": {"latitude": TIMES_SQUARE_LATITDE, 
+                                    "longitude": TIMES_SQUARE_LONGITUDE}
             }
             }
         ]

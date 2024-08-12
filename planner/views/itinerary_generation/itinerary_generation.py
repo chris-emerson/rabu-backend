@@ -9,8 +9,11 @@ from planner.serializers import ItinerarySerializer
 from planner.tasks import query_gpt
 
 class ItineraryGenerationView(APIView):
+    """Endpoint to generate a new Itinerary"""
     allowed_methods = ['POST']
+    
     def post(self, request):
+        """Create ItineraryGeneration resource"""
         body_unicode = request.body.decode('utf-8')
         body = json.loads(body_unicode)
 
@@ -19,6 +22,7 @@ class ItineraryGenerationView(APIView):
 
         geo_data = geolocate.reverse_lookup(latitude, longitude)
         place_name = extract.extract_placename(geo_data)
+        
 
         # Offload the process to background workers so that
         # we can scale the worker pool

@@ -1,15 +1,16 @@
 """This file contains logic to perform a custom google image search."""
-import os
 import requests
 
 from trabu_backend.settings import GOOGLE_IMAGE_API_KEY, GOOGLE_IMAGE_CX
+def get_url(place_name: str):
+    return (f'https://www.googleapis.com/customsearch/v1?cx={GOOGLE_IMAGE_CX}'
+            f'&key={GOOGLE_IMAGE_API_KEY}'
+            f'&q={place_name}'
+            '&ImgSize=SMALL'
+            '&ImgType=photo')
 
 def get_features(place_name):
-    url=(f'https://www.googleapis.com/customsearch/v1?cx={GOOGLE_IMAGE_CX}'
-         f'&key={GOOGLE_IMAGE_API_KEY}'
-         f'&q={place_name}'
-         '&ImgSize=SMALL'
-         '&ImgType=photo')
+    url=get_url(place_name)
 
     return requests.get(url, timeout=20)
 
