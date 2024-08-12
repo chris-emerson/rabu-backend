@@ -4,17 +4,19 @@ import requests
 
 from trabu_backend.settings import GOOGLE_IMAGE_API_KEY, GOOGLE_IMAGE_CX
 
-
-def lookup_img_url(placeName):
-    """Return small photo images relating to a given place."""
-
+def get_features(place_name):
     url=(f'https://www.googleapis.com/customsearch/v1?cx={GOOGLE_IMAGE_CX}'
          f'&key={GOOGLE_IMAGE_API_KEY}'
-         f'&q={placeName}'
+         f'&q={place_name}'
          '&ImgSize=SMALL'
          '&ImgType=photo')
 
-    r = requests.get(url, timeout=20)
+    return requests.get(url, timeout=20)
+
+def lookup_img_url(place_name):
+    """Return small photo images relating to a given place."""
+
+    r = get_features(place_name)
 
     # n.b. Ideally use a JSON query library / JSONPath for production code and handle errors properly
     try:

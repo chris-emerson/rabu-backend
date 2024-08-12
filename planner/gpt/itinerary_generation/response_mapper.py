@@ -1,7 +1,7 @@
 """This file contains logic to Create a new Itinerary from a GPT response."""
-from planner.geolocation.geolocate import forward_lookup, extract_coordinates
 from planner.images.search import lookup_img_url
 from planner.models import Activity, Itinerary, ItineraryItem, ItineraryItemGroup
+from planner.geolocation import geolocate, extract
 
 def save_response(gpt_response, latitude, longitude):
     """Save a Chat GPT response to an Itinerary.
@@ -19,11 +19,9 @@ def save_response(gpt_response, latitude, longitude):
         )
         for item in group_data["itinerary_items"]:
             search_address = item["activity_location"]["full_address"]
-
-            location_features = forward_lookup(search_address, latitude, longitude)
-            coordinates = extract_coordinates(location_features)
+            location_features = geolocate.forward_lookup(search_address, latitude, longitude)
+            coordinates = extract.extract_coordinates(location_features)
             img_url = lookup_img_url(item["activity_description"])
-
             activity = Activity.objects.create(description=item["activity_description"],
                                                full_description=item["activity_full_description"],
                                                image=img_url)

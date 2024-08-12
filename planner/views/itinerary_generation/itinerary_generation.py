@@ -2,7 +2,7 @@ import json
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from planner.geolocation import geolocate
+from planner.geolocation import geolocate, extract
 from planner.gpt.itinerary_generation.response_mapper import save_response
 from planner.serializers import ItinerarySerializer
 
@@ -18,8 +18,7 @@ class ItineraryGenerationView(APIView):
         longitude = body['data']['attributes']['longitude']
 
         geo_data = geolocate.reverse_lookup(latitude, longitude)
-        place_name = geolocate.extract_placename(geo_data)
-
+        place_name = extract.extract_placename(geo_data)
 
         # Offload the process to background workers so that
         # we can scale the worker pool
